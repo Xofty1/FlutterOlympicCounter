@@ -62,13 +62,6 @@ class MainScreen extends StatelessWidget {
               },
               child: const Text('Посчитать Биатлон'),
             ),
-            const SizedBox(height: 20), // Отступ между кнопками
-            ElevatedButton(
-              onPressed: () {
-                FileService().pickAndReadExcel(); // Открытие диалога для выбора файла
-              },
-              child: const Text('Выбрать файл Excel'),
-            ),
           ],
         ),
       ),
