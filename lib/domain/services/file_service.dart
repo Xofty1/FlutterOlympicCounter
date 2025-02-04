@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
 
+import 'package:path/path.dart' as path;
+
 import '../models/BiathlonParticipant.dart';
 
 class FileService{
@@ -25,7 +27,7 @@ class FileService{
 
   Future<void> saveToExcel(List<List<BiathlonParticipant>> groupedBiathlonists, List<List<int>> years) async {
     var excel = Excel.createExcel();
-
+    excel.delete('Sheet1');
     for (int i = 0; i < groupedBiathlonists.length; i++) {
       String sheetName = "${years[i][0]}-${years[i][1]}";
       var sheet = excel[sheetName];
@@ -47,8 +49,20 @@ class FileService{
       }
     }
 
-    File file = File("biathlon_results.xlsx");
+    // Позволяем пользователю выбрать директорию для сохранения
+    String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+
+    if (selectedDirectory == null) {
+      print("Пользователь не выбрал директорию.");
+      return;
+    }
+
+    // Формируем путь к файлу
+    final filePath = path.join(selectedDirectory, 'biathlon_results.xlsx');
+
+    // Сохраняем файл
+    File file = File(filePath);
     await file.writeAsBytes(excel.encode()!);
-    print("Файл сохранен: biathlon_results.xlsx");
+    print("Файл сохранен: $filePath");
   }
 }

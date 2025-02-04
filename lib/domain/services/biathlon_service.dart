@@ -5,6 +5,7 @@ import 'package:olympic_counter/domain/services/time_service.dart';
 import '../di.dart';
 import '../models/BiathlonParticipant.dart';
 
+
 class BiathlonService {
   final TimeService _timeService = getIt<TimeService>();
   List<List<BiathlonParticipant>> groupedBiathlonists = [];
