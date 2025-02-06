@@ -4,73 +4,109 @@ import 'package:olympic_counter/domain/services/time_service.dart';
 
 import '../di.dart';
 import '../models/BiathlonParticipant.dart';
+import '../models/OlympicParticipant.dart';
+
 
 class OlympicGamesService {
-  List<List<int>> year = [];
   final TimeService _timeService = getIt<TimeService>();
+  List<List<OlympicParticipant>> groupedOlympics = [];
 
-  Future<bool> execute(List<List<int>> year) async {
+  Future<bool> execute(List<List<int>> years) async {
     FileService fileService = FileService();
     Excel? excel = await fileService.pickAndGetExcel();
 
     if (excel == null) {
       print("Файл не выбран.");
-      return false; // Возвращаем false, если файл не выбран
+      return false;
     }
 
-    List<BiathlonParticipant> biathlonists = [];
-    bool isDataProcessed = await readDataFromExcel(excel, biathlonists);
+    bool isDataProcessed = await processExcelData(excel, years);
+    await fileService.saveToExcelOlympic(groupedOlympics, years);
 
-    if (biathlonists.isNotEmpty) {
-      print("${biathlonists.last.totalTime} ${biathlonists.last.name}");
-    }
-
-    return isDataProcessed; // Возвращаем true, если данные успешно обработаны
+    return isDataProcessed;
   }
 
-  Future<bool> readDataFromExcel(Excel excel, List<BiathlonParticipant> biathlonists) async {
+  Future<bool> processExcelData(Excel excel, List<List<int>> years) async {
     bool isDataProcessed = false;
+    groupedOlympics = List.generate(years.length, (_) => []);
 
     for (var table in excel.tables.keys) {
-      print('Лист: $table'); // Имя листа
+      print('Лист: $table');
       var rows = excel.tables[table]?.rows;
 
       if (rows != null) {
-        isDataProcessed = await readDataFromTable(rows, biathlonists) || isDataProcessed;
+        print("Количество строк в таблице: ${rows.length}");
+        isDataProcessed = await processRows(rows, years) || isDataProcessed;
+
+        for (int i = 0; i < groupedOlympics.length; i++) {
+          print(
+              "Группа ${i + 1}: ${groupedOlympics[i].length} биатлонистов");
+          for (var participant in groupedOlympics[i]) {
+            print(
+                "До сортировки: ${participant.name}");
+          }
+        }
+
+        countPlaces();
+
+        print("Сортировка выполнена.");
+        for (int i = 0; i < groupedOlympics.length; i++) {
+          for (var participant in groupedOlympics[i]) {
+            print(
+                "После сортировки: ${participant.name}");
+          }
+        }
       }
     }
 
     return isDataProcessed;
   }
 
-  Future<bool> readDataFromTable(List<List<Data?>> rows, List<BiathlonParticipant> biathlonists) async {
+  Future<bool> processRows(
+      List<List<Data?>> rows, List<List<int>> years) async {
     bool isDataProcessed = false;
 
     for (var rowIndex = 1; rowIndex < rows.length; rowIndex++) {
       try {
-        print(rows[rowIndex]);
-        print(rows[rowIndex][4]?.value.runtimeType);
+        var row = rows[rowIndex];
+        if (row.length < 9) continue;
 
-        int finishTime = _timeService.convertToMilliseconds(rows[rowIndex][4]!.value.toString());
-        int startTime = _timeService.convertToMilliseconds(rows[rowIndex][5]!.value.toString());
+        int running60m =
+        _timeService.convertToMilliseconds(row[9]?.value.toString() ?? '');
+        int? year = int.tryParse(row[2]?.value.toString() ?? '');
 
-        biathlonists.add(BiathlonParticipant(
-          name: rows[rowIndex][1]!.value.toString(),
-          year: int.tryParse(rows[rowIndex][2]!.value.toString()),
-          squadNumber: int.tryParse(rows[rowIndex][3]!.value.toString()),
-          finishTime: finishTime,
-          startTime: startTime,
-          penaltyLoopNumber: int.tryParse(rows[rowIndex][6]!.value.toString()),
-          totalTime: _timeService.countTotalTime(finishTime, startTime),
-        ));
+        OlympicParticipant participant = OlympicParticipant(
+          name: row[1]?.value.toString() ?? '',
+          year: year,
+          squadNumber: int.tryParse(row[3]?.value.toString() ?? ''),
+          ropeJumping: int.tryParse(row[4]?.value.toString() ?? '') ?? 0,
+          ballThrowing: int.tryParse(row[5]?.value.toString() ?? '') ?? 0,
+          armFlexionExtension: int.tryParse(row[6]?.value.toString() ?? '') ?? 0,
+          highJump: int.tryParse(row[7]?.value.toString() ?? '') ?? 0,
+          longJump: int.tryParse(row[8]?.value.toString() ?? '') ?? 0,
+          running60m: running60m,
+        );
 
-        isDataProcessed = true; // Данные успешно обработаны
+        for (int i = 0; i < years.length; i++) {
+          if (year != null && years[i][0] <= year && years[i][1] >= year) {
+            groupedOlympics[i].add(participant);
+            print("Добавлен ${participant.name} в группу $i");
+            break;
+          }
+        }
+
+        isDataProcessed = true;
       } catch (e) {
         print("Ошибка при обработке строки $rowIndex: $e");
-        // Продолжаем обработку следующих строк, даже если текущая строка содержит ошибку
       }
     }
 
     return isDataProcessed;
   }
+
+
+  void countPlaces(){
+
+  }
+
 }

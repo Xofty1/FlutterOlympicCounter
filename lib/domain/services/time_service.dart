@@ -1,4 +1,4 @@
-class TimeService{
+class TimeService {
   int countTotalTime(int finishTime, int startTime) {
     return finishTime - startTime;
   }
@@ -19,5 +19,14 @@ class TimeService{
         (minutes * 60 * 1000) + (seconds * 1000) + milliseconds;
 
     return totalMilliseconds;
+  }
+
+  String convertFromMilliseconds(int? time) {
+    if (time == null) return "Error";
+    int minutes = time ~/ 60000;
+    time -= minutes * 60000;
+    int seconds = time ~/ 1000;
+    time -= seconds * 1000;
+    return "$minutes.$seconds.$time";
   }
 }

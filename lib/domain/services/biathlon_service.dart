@@ -20,7 +20,7 @@ class BiathlonService {
     }
 
     bool isDataProcessed = await processExcelData(excel, years);
-    await fileService.saveToExcel(groupedBiathlonists, years);
+    await fileService.saveToExcelBiathlon(groupedBiathlonists, years);
 
     return isDataProcessed;
   }
