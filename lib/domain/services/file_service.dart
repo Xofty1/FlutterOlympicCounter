@@ -6,6 +6,7 @@ import 'package:olympic_counter/domain/models/OlympicParticipant.dart';
 import 'package:olympic_counter/domain/services/time_service.dart';
 
 import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
 
 import '../di.dart';
 import '../models/BiathlonParticipant.dart';
@@ -35,6 +36,7 @@ class FileService {
       List<List<int>> years) async {
     var excel = Excel.createExcel();
     excel.delete('Sheet1');
+
     for (int i = 0; i < groupedBiathlonists.length; i++) {
       String sheetName = "${years[i][0]}-${years[i][1]}";
       var sheet = excel[sheetName];
@@ -49,25 +51,15 @@ class FileService {
         "Общее время",
         "Место"
       ]);
+
       int place = 1;
-      sheet.appendRow([
-        groupedBiathlonists[i][0].name,
-        groupedBiathlonists[i][0].year,
-        groupedBiathlonists[i][0].squadNumber,
-        _timeService
-            .convertFromMilliseconds(groupedBiathlonists[i][0].finishTime),
-        _timeService
-            .convertFromMilliseconds(groupedBiathlonists[i][0].startTime),
-        groupedBiathlonists[i][0].penaltyLoopNumber,
-        _timeService
-            .convertFromMilliseconds(groupedBiathlonists[i][0].totalTime),
-        place
-      ]);
-      for (int j = 1; j < groupedBiathlonists[i].length; j++) {
+      for (int j = 0; j < groupedBiathlonists[i].length; j++) {
         var participant = groupedBiathlonists[i][j];
-        if (participant.totalTime != groupedBiathlonists[i][j - 1].totalTime) {
+
+        if (j > 0 && participant.totalTime != groupedBiathlonists[i][j - 1].totalTime) {
           place++;
         }
+
         sheet.appendRow([
           participant.name,
           participant.year,
@@ -79,90 +71,92 @@ class FileService {
           place
         ]);
       }
-
-      // Позволяем пользователю выбрать директорию для сохранения
-      String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
-
-      if (selectedDirectory == null) {
-        print("Пользователь не выбрал директорию.");
-        return;
-      }
-
-      // Формируем путь к файлу
-      final filePath = path.join(selectedDirectory, 'biathlon_results.xlsx');
-
-      // Сохраняем файл
-      File file = File(filePath);
-      await file.writeAsBytes(excel.encode()!);
-      print("Файл сохранен: $filePath");
     }
+
+    // Получаем директорию для сохранения файла
+    final directory = await getExternalStorageDirectory();
+    if (directory == null) {
+      print("Не удалось получить директорию для сохранения.");
+      return;
+    }
+
+    // Формируем путь к файлу
+    final filePath = path.join(directory.path, 'biathlon_results.xlsx');
+
+    // Сохраняем файл
+    File file = File(filePath);
+    await file.writeAsBytes(excel.encode()!);
+    print("Файл сохранен: $filePath");
   }
 
   Future<void> saveToExcelOlympic(
       List<List<OlympicParticipant>> groupedOlympic,
       List<List<int>> years) async {
     var excel = Excel.createExcel();
-    excel.delete('Sheet1');
+    excel.delete('Sheet1'); // Удаляем стандартный лист
+
     for (int i = 0; i < groupedOlympic.length; i++) {
+      // Создаем имя листа на основе диапазона лет
       String sheetName = "${years[i][0]}-${years[i][1]}";
       var sheet = excel[sheetName];
 
+      // Добавляем заголовки столбцов
       sheet.appendRow([
         "Имя",
         "Год рождения",
-        "Номер",
-        "Финишное время",
-        "Стартовое время",
-        "Штрафные круги",
-        "Общее время",
+        "Номер команды",
+        "Прыжки со скакалкой",
+        "Броски мяча",
+        "Сгиб-разгиб рук",
+        "Прыжки в высоту",
+        "Прыжки в длину",
+        "Бег 60 м",
+        "Общие баллы",
         "Место"
       ]);
+
+      // Сортируем участников по общим баллам (points)
+      groupedOlympic[i].sort((a, b) => b.points.compareTo(a.points));
+
+      // Добавляем данные участников
       int place = 1;
-      sheet.appendRow([
-        groupedOlympic[i][0].name,
-        groupedOlympic[i][0].year,
-        groupedOlympic[i][0].squadNumber,
-        _timeService
-            .convertFromMilliseconds(groupedOlympic[i][0].finishTime),
-        _timeService
-            .convertFromMilliseconds(groupedOlympic[i][0].startTime),
-        groupedOlympic[i][0].penaltyLoopNumber,
-        _timeService
-            .convertFromMilliseconds(groupedOlympic[i][0].totalTime),
-        place
-      ]);
-      for (int j = 1; j < groupedOlympic[i].length; j++) {
+      for (int j = 0; j < groupedOlympic[i].length; j++) {
         var participant = groupedOlympic[i][j];
-        if (participant.totalTime != groupedOlympic[i][j - 1].totalTime) {
-          place++;
+
+        // Увеличиваем место, если баллы отличаются от предыдущего участника
+        if (j > 0 && participant.points != groupedOlympic[i][j - 1].points) {
+          place = j + 1;
         }
+
         sheet.appendRow([
           participant.name,
           participant.year,
           participant.squadNumber,
-          _timeService.convertFromMilliseconds(participant.finishTime),
-          _timeService.convertFromMilliseconds(participant.startTime),
-          participant.penaltyLoopNumber,
-          _timeService.convertFromMilliseconds(participant.totalTime),
+          participant.ropeJumping,
+          participant.ballThrowing,
+          participant.armFlexionExtension,
+          participant.highJump,
+          participant.longJump,
+          _timeService.convertFromMillisecondsOfOlympics(participant.running60m),
+          participant.points,
           place
         ]);
       }
-
-      // Позволяем пользователю выбрать директорию для сохранения
-      String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
-
-      if (selectedDirectory == null) {
-        print("Пользователь не выбрал директорию.");
-        return;
-      }
-
-      // Формируем путь к файлу
-      final filePath = path.join(selectedDirectory, 'biathlon_results.xlsx');
-
-      // Сохраняем файл
-      File file = File(filePath);
-      await file.writeAsBytes(excel.encode()!);
-      print("Файл сохранен: $filePath");
     }
+
+    // Позволяем пользователю выбрать директорию для сохранения
+    final directory = await getExternalStorageDirectory();
+    if (directory == null) {
+      print("Не удалось получить директорию для сохранения.");
+      return;
+    }
+
+    // Формируем путь к файлу
+    final filePath = path.join(directory.path, 'olympic_games_results.xlsx');
+
+    // Сохраняем файл
+    File file = File(filePath);
+    await file.writeAsBytes(excel.encode()!);
+    print("Файл сохранен: $filePath");
   }
 }

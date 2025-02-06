@@ -178,7 +178,7 @@ class _BiathlonScreenState extends State<BiathlonScreen> {
                       print("Ошибка при обработке данных.");
                     }
                   },
-                  child: const Text('Посчитать олимпийские игры'),
+                  child: const Text('Посчитать игры'),
                 ),
                 IconButton(
                   icon: const Icon(Icons.remove),

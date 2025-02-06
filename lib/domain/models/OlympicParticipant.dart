@@ -7,6 +7,7 @@ class OlympicParticipant extends Participant {
   int highJump; // Прыжки в высоту
   int longJump; // Прыжки в длину
   int running60m; // Бег 60 м.
+  int points = 0;
 
   OlympicParticipant({
     required super.name,

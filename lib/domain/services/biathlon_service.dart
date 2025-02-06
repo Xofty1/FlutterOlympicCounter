@@ -5,7 +5,6 @@ import 'package:olympic_counter/domain/services/time_service.dart';
 import '../di.dart';
 import '../models/BiathlonParticipant.dart';
 
-
 class BiathlonService {
   final TimeService _timeService = getIt<TimeService>();
   List<List<BiathlonParticipant>> groupedBiathlonists = [];
@@ -69,13 +68,15 @@ class BiathlonService {
       try {
         var row = rows[rowIndex];
         if (row.length < 7) continue;
-
+        print("50");
         int finishTime =
             _timeService.convertToMilliseconds(row[4]?.value.toString() ?? '');
+        print("50.5");
         int startTime =
             _timeService.convertToMilliseconds(row[5]?.value.toString() ?? '');
+        print("50.7");
         int? year = int.tryParse(row[2]?.value.toString() ?? '');
-
+        print("51");
         BiathlonParticipant participant = BiathlonParticipant(
           name: row[1]?.value.toString() ?? '',
           year: year,
@@ -85,7 +86,7 @@ class BiathlonService {
           penaltyLoopNumber: int.tryParse(row[6]?.value.toString() ?? ''),
           totalTime: _timeService.countTotalTime(finishTime, startTime),
         );
-
+        print("52");
         for (int i = 0; i < years.length; i++) {
           if (year != null && years[i][0] <= year && years[i][1] >= year) {
             groupedBiathlonists[i].add(participant);
@@ -93,6 +94,7 @@ class BiathlonService {
             break;
           }
         }
+        print("53");
 
         isDataProcessed = true;
       } catch (e) {

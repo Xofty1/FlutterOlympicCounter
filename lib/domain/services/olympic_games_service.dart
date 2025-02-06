@@ -70,10 +70,10 @@ class OlympicGamesService {
       try {
         var row = rows[rowIndex];
         if (row.length < 9) continue;
-
         int running60m =
-        _timeService.convertToMilliseconds(row[9]?.value.toString() ?? '');
+        _timeService.convertToMillisecondsOfOlympic(row[9]?.value.toString() ?? '');
         int? year = int.tryParse(row[2]?.value.toString() ?? '');
+        print("Год $year");
 
         OlympicParticipant participant = OlympicParticipant(
           name: row[1]?.value.toString() ?? '',
@@ -105,8 +105,31 @@ class OlympicGamesService {
   }
 
 
-  void countPlaces(){
+  void countPlaces() {
+    for (int i = 0; i < groupedOlympics.length; i++) {
+      // Функция для подсчета баллов на основе критерия
+      void calculatePoints(int Function(OlympicParticipant a, OlympicParticipant b) compareFunction) {
+        groupedOlympics[i].sort(compareFunction); // Сортировка по критерию
+        int points = 1;
+        var previousParticipant = groupedOlympics[i][0];
 
+        for (int j = 1; j < groupedOlympics[i].length; j++) {
+          groupedOlympics[i][j].points += points; // Добавляем баллы
+          if (compareFunction(previousParticipant, groupedOlympics[i][j]) != 0) {
+            points++; // Увеличиваем баллы, если текущий результат отличается от предыдущего
+          }
+          previousParticipant = groupedOlympics[i][j];
+        }
+      }
+
+      // Подсчет баллов для каждого вида спорта
+      calculatePoints((a, b) => a.ropeJumping.compareTo(b.ropeJumping)); // Прыжки со скакалкой
+      calculatePoints((a, b) => a.ballThrowing.compareTo(b.ballThrowing)); // Броски мяча
+      calculatePoints((a, b) => a.armFlexionExtension.compareTo(b.armFlexionExtension)); // Сгиб разгиб рук
+      calculatePoints((a, b) => a.highJump.compareTo(b.highJump)); // Прыжки в высоту
+      calculatePoints((a, b) => a.longJump.compareTo(b.longJump)); // Прыжки в длину
+      calculatePoints((a, b) => b.running60m.compareTo(a.running60m)); // Бег 60 м
+    }
   }
 
 }
