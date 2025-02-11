@@ -26,8 +26,6 @@ class TimeService {
     // Разделяем строку на минуты, секунды и миллисекунды
     print("Время $time");
     List<String> timeParts = time.split('.');
-    print(" ");
-    print("Части $timeParts");
     int seconds = int.parse(timeParts[0]);
     int milliseconds = int.parse(timeParts[1]);
 
@@ -39,17 +37,25 @@ class TimeService {
 
   String convertFromMilliseconds(int? time) {
     if (time == null) return "Error";
+
     int minutes = time ~/ 60000;
-    time -= minutes * 60000;
+    time %= 60000; // Оставшиеся миллисекунды
+
     int seconds = time ~/ 1000;
-    time -= seconds * 1000;
-    return "$minutes.$seconds.$time";
+    int milliseconds = time % 1000; // Оставшиеся миллисекунды
+
+    // Форматируем секунды и миллисекунды
+    String strSeconds = seconds.toString().padLeft(2, '0');
+    String strMilliseconds = milliseconds.toString().padLeft(2, '0');
+
+    return "$minutes.$strSeconds.$strMilliseconds"; // Формат MM:SS.mmm
   }
+
 
   String convertFromMillisecondsOfOlympics(int? time) {
     if (time == null) return "Error";
     int seconds = time ~/ 1000;
     time -= seconds * 1000;
-    return "$seconds,$time";
+    return "$seconds,${time.toString().padRight(2, '0')}";
   }
 }

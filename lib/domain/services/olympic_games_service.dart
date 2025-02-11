@@ -8,22 +8,24 @@ import '../models/OlympicParticipant.dart';
 
 
 class OlympicGamesService {
+  String message = '';
   final TimeService _timeService = getIt<TimeService>();
   List<List<OlympicParticipant>> groupedOlympics = [];
 
-  Future<bool> execute(List<List<int>> years) async {
+  Future<String> execute(List<List<int>> years) async {
     FileService fileService = FileService();
     Excel? excel = await fileService.pickAndGetExcel();
 
     if (excel == null) {
-      print("Файл не выбран.");
-      return false;
+      return "Файл не выбран";
+    }
+    bool isDataProcessed = await processExcelData(excel, years);
+    if (isDataProcessed) {
+      return await fileService.saveToExcelOlympic(groupedOlympics, years);
     }
 
-    bool isDataProcessed = await processExcelData(excel, years);
-    await fileService.saveToExcelOlympic(groupedOlympics, years);
 
-    return isDataProcessed;
+    return message;
   }
 
   Future<bool> processExcelData(Excel excel, List<List<int>> years) async {

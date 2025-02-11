@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:olympic_counter/domain/services/biathlon_service.dart';
 import 'package:olympic_counter/domain/services/olympic_games_service.dart';
-import 'package:olympic_counter/presentation/info_screen.dart';
+import 'package:olympic_counter/presentation/result_screen.dart';
 
 class BiathlonScreen extends StatefulWidget {
   const BiathlonScreen({super.key});
@@ -162,12 +162,13 @@ class _BiathlonScreenState extends State<BiathlonScreen> {
                     onPressed: () async {
                       _saveYears();
                       print("Года ${yearPairs}");
-                      bool result = await BiathlonService().execute(yearPairs);
-                      if (result) {
-                        print("Данные успешно обработаны.");
-                      } else {
-                        print("Ошибка при обработке данных.");
-                      }
+                      String resultMessage = await BiathlonService().execute(yearPairs);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ResultScreen(message: resultMessage),
+                        ),
+                      );
                     },
                     child: const Text('Посчитать биатлон'),
                   ),
@@ -176,12 +177,13 @@ class _BiathlonScreenState extends State<BiathlonScreen> {
                   flex: 2,
                   child: ElevatedButton(
                     onPressed: () async {
-                      bool result = await OlympicGamesService().execute(yearPairs);
-                      if (result) {
-                        print("Данные успешно обработаны.");
-                      } else {
-                        print("Ошибка при обработке данных.");
-                      }
+                      String resultMessage = await OlympicGamesService().execute(yearPairs);
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => ResultScreen(message: resultMessage),
+                        ),
+                      );
                     },
                     child: const Text('Посчитать игры'),
                   ),

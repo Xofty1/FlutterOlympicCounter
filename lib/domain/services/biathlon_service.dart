@@ -6,22 +6,24 @@ import '../di.dart';
 import '../models/BiathlonParticipant.dart';
 
 class BiathlonService {
+  String message = '';
   final TimeService _timeService = getIt<TimeService>();
   List<List<BiathlonParticipant>> groupedBiathlonists = [];
 
-  Future<bool> execute(List<List<int>> years) async {
+  Future<String> execute(List<List<int>> years) async {
     FileService fileService = FileService();
     Excel? excel = await fileService.pickAndGetExcel();
 
     if (excel == null) {
-      print("Файл не выбран.");
-      return false;
+      return "Файл не выбран";
     }
 
     bool isDataProcessed = await processExcelData(excel, years);
-    await fileService.saveToExcelBiathlon(groupedBiathlonists, years);
+    if (isDataProcessed) {
+      return await fileService.saveToExcelBiathlon(groupedBiathlonists, years);
+    }
 
-    return isDataProcessed;
+    return message;
   }
 
   Future<bool> processExcelData(Excel excel, List<List<int>> years) async {
@@ -98,6 +100,7 @@ class BiathlonService {
 
         isDataProcessed = true;
       } catch (e) {
+        message = "Ошибка при обработке строки $rowIndex: $e";
         print("Ошибка при обработке строки $rowIndex: $e");
       }
     }

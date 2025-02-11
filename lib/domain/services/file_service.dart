@@ -31,11 +31,15 @@ class FileService {
     return null;
   }
 
-  Future<void> saveToExcelBiathlon(
+  Future<String> saveToExcelBiathlon(
       List<List<BiathlonParticipant>> groupedBiathlonists,
       List<List<int>> years) async {
     var excel = Excel.createExcel();
-    excel.delete('Sheet1');
+    String defaultSheet = excel.getDefaultSheet()!;
+    if (excel.sheets.containsKey(defaultSheet)) {
+      excel.sheets.remove(defaultSheet);
+    }
+
 
     for (int i = 0; i < groupedBiathlonists.length; i++) {
       String sheetName = "${years[i][0]}-${years[i][1]}";
@@ -76,8 +80,7 @@ class FileService {
     // Получаем директорию для сохранения файла
     final directory = await getExternalStorageDirectory();
     if (directory == null) {
-      print("Не удалось получить директорию для сохранения.");
-      return;
+      return "Не удалось получить директорию для сохранения.";
     }
 
     // Формируем путь к файлу
@@ -86,10 +89,10 @@ class FileService {
     // Сохраняем файл
     File file = File(filePath);
     await file.writeAsBytes(excel.encode()!);
-    print("Файл сохранен: $filePath");
+    return "Файл сохранен: $filePath";
   }
 
-  Future<void> saveToExcelOlympic(
+  Future<String> saveToExcelOlympic(
       List<List<OlympicParticipant>> groupedOlympic,
       List<List<int>> years) async {
     var excel = Excel.createExcel();
@@ -147,8 +150,7 @@ class FileService {
     // Позволяем пользователю выбрать директорию для сохранения
     final directory = await getExternalStorageDirectory();
     if (directory == null) {
-      print("Не удалось получить директорию для сохранения.");
-      return;
+      return "Не удалось получить директорию для сохранения.";
     }
 
     // Формируем путь к файлу
@@ -157,6 +159,6 @@ class FileService {
     // Сохраняем файл
     File file = File(filePath);
     await file.writeAsBytes(excel.encode()!);
-    print("Файл сохранен: $filePath");
+    return "Файл сохранен: $filePath";
   }
 }
