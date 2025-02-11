@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:olympic_counter/domain/services/biathlon_service.dart';
 import 'package:olympic_counter/domain/services/olympic_games_service.dart';
-import 'package:olympic_counter/presentation/olympic_games_screen.dart';
+import 'package:olympic_counter/presentation/info_screen.dart';
 
 class BiathlonScreen extends StatefulWidget {
   const BiathlonScreen({super.key});
@@ -82,12 +82,9 @@ class _BiathlonScreenState extends State<BiathlonScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Биатлон'),
+        title: const Text('Настройки соревнований'),
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        // Добавляем padding
-        child: Column(
+      body: Column(
           children: [
             Expanded(
               child: SingleChildScrollView(
@@ -150,45 +147,58 @@ class _BiathlonScreenState extends State<BiathlonScreen> {
               ),
             ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                IconButton(
-                  icon: const Icon(Icons.add),
-                  onPressed: _addRow,
+                Flexible(
+                  flex: 1,
+                  child: IconButton(
+                    icon: const Icon(Icons.add),
+                    onPressed: _addRow,
+                  ),
                 ),
-                ElevatedButton(
-                  onPressed: () async {
-                    _saveYears();
-                    print("Года ${yearPairs}");
-                    bool result = await BiathlonService().execute(yearPairs);
-                    if (result) {
-                      print("Данные успешно обработаны.");
-                    } else {
-                      print("Ошибка при обработке данных.");
-                    }
-                  },
-                  child: const Text('Посчитать биатлон'),
+                Flexible(
+                  flex: 2,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      _saveYears();
+                      print("Года ${yearPairs}");
+                      bool result = await BiathlonService().execute(yearPairs);
+                      if (result) {
+                        print("Данные успешно обработаны.");
+                      } else {
+                        print("Ошибка при обработке данных.");
+                      }
+                    },
+                    child: const Text('Посчитать биатлон'),
+                  ),
                 ),
-                ElevatedButton(
-                  onPressed: () async {
-                    bool result = await OlympicGamesService().execute(yearPairs);
-                    if (result) {
-                      print("Данные успешно обработаны.");
-                    } else {
-                      print("Ошибка при обработке данных.");
-                    }
-                  },
-                  child: const Text('Посчитать игры'),
+                Flexible(
+                  flex: 2,
+                  child: ElevatedButton(
+                    onPressed: () async {
+                      bool result = await OlympicGamesService().execute(yearPairs);
+                      if (result) {
+                        print("Данные успешно обработаны.");
+                      } else {
+                        print("Ошибка при обработке данных.");
+                      }
+                    },
+                    child: const Text('Посчитать игры'),
+                  ),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.remove),
-                  onPressed: _deleteRow,
+                Flexible(
+                  flex: 1,
+                  child: IconButton(
+                    icon: const Icon(Icons.remove),
+                    onPressed: _deleteRow,
+                  ),
                 ),
               ],
             ),
+
           ],
         ),
-      ),
+
     );
   }
 }

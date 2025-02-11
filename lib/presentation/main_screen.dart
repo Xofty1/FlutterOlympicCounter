@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:olympic_counter/domain/services/file_service.dart';
-import 'olympic_games_screen.dart';
-import 'biathlon_screen.dart';
+import 'info_screen.dart';
+import 'years_screen.dart';
 
 class MainScreen extends StatelessWidget {
   const MainScreen({super.key});
@@ -41,16 +41,7 @@ class MainScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ElevatedButton(
-              onPressed: () {
-                // Переход на экран Олимпийских игр
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const OlympicGamesScreen()),
-                );
-              },
-              child: const Text('Посчитать Олимпийские игры'),
-            ),
+
             const SizedBox(height: 20), // Отступ между кнопками
             ElevatedButton(
               onPressed: () {
@@ -60,7 +51,17 @@ class MainScreen extends StatelessWidget {
                   MaterialPageRoute(builder: (context) => const BiathlonScreen()),
                 );
               },
-              child: const Text('Посчитать Биатлон'),
+              child: const Text('Посчитать результаты соревнований'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                // Переход на экран Олимпийских игр
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const InfoScreen()),
+                );
+              },
+              child: const Text('Как правильно посчитать результаты'),
             ),
           ],
         ),
